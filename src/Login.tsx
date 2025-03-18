@@ -53,13 +53,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   
   return (
     <div className="min-h-screen flex items-center justify-center animate-gradient-bg">
-      <Toaster position="top-right" />
-      <div className="login-card p-8 rounded-xl w-full max-w-md">
+      <Toaster position="top-right" 
+        toastOptions={{
+          style: {
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(10px)',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+          },
+        }}
+      />
+      <div className="login-card p-6 md:p-8 rounded-xl w-full max-w-md mx-4">
         <div className="flex flex-col items-center">
           <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-white/10 text-white">
             <Users className="w-8 h-8 glow-sm" />
           </div>
-          <h2 className="text-2xl font-bold text-white glow-text mb-6">Channel-Specific Customers</h2>
+          <h2 className="text-2xl font-bold text-white glow-text mb-6 text-center">Channel-Specific Customers</h2>
           <p className="text-white mb-8 text-center high-contrast-text">
             Log in to access the customer and channel management system.
           </p>
@@ -103,7 +114,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <div className="mt-6 text-center text-white text-sm">
             <p className="font-semibold">Demo Credentials</p>
             <div className="mt-2 flex items-center justify-center space-x-2">
-              <p className="credential-display">
+              <p className="credential-display text-xs md:text-sm overflow-x-auto">
                 Email: {demoEmail}
               </p>
               <button 
@@ -119,7 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               </button>
             </div>
             <div className="mt-2 flex items-center justify-center space-x-2">
-              <p className="credential-display">
+              <p className="credential-display text-xs md:text-sm overflow-x-auto">
                 Password: {demoPassword}
               </p>
               <button 

@@ -50,8 +50,16 @@
 }
 
 @layer base {
+  * {
+    @apply box-border;
+  }
+  
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   body {
-    @apply bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-900 min-h-screen text-white bg-fixed;
+    @apply bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-900 min-h-screen text-white bg-fixed font-sans;
     background-image: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
                       radial-gradient(circle at 90% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 30%),
                       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
@@ -110,7 +118,10 @@
   }
   
   .badge {
-    @apply px-2 py-1 text-xs rounded-full flex items-center gap-1 font-bold;
+    @apply px-2 py-1 text-xs rounded-full font-bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
   
@@ -211,5 +222,40 @@
     100% {
       background-position: 0% 50%;
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .glass-header .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .glass-header .header-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .glass-header .search-container {
+    width: 100%;
+  }
+  
+  .glass-header .button-container {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  
+  .login-card {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .credential-display {
+    font-size: 0.75rem;
+    overflow-x: auto;
+    max-width: 100%;
   }
 }

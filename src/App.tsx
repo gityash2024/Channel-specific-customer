@@ -13,7 +13,9 @@ import {
   CheckCircle,
   XCircle,
   Link,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -43,7 +45,6 @@ import {
   logout
 } from './lib/localStorage';
 
-// Loading Modal Component
 const LoadingModal = ({ visible }: { visible: boolean }) => {
   if (!visible) return null;
   
@@ -75,6 +76,7 @@ function App() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ type: 'channel' | 'customer', id: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     initializeLocalStorage();
@@ -190,7 +192,6 @@ function App() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    // Small delay to ensure loading modal appears
     setTimeout(() => {
       fetchData();
     }, 2000);
@@ -250,9 +251,8 @@ function App() {
         }}
       />
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="glass-dialog">
+        <DialogContent className="glass-dialog max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="text-xl text-white">Confirm Deletion</DialogTitle>
             <DialogDescription className="text-white high-contrast-text">
@@ -276,52 +276,60 @@ function App() {
         </DialogContent>
       </Dialog>
 
-      {/* Header */}
       <header className="glass-header">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              <Users className="w-8 h-8 text-white glow-sm" />
-              Channel-Specific Customers
-            </h1>
-            <div className="flex items-center gap-4">
-              <div className="relative">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                <Users className="w-6 h-6 md:w-8 md:h-8 text-white glow-sm" />
+                <span className="truncate">Channel-Specific Customers</span>
+              </h1>
+              <button 
+                className="md:hidden bg-black/30 p-2 rounded-md"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X /> : <Menu />}
+              </button>
+            </div>
+            
+            <div className={`${mobileMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto`}>
+              <div className="flex-grow md:w-64">
                 <Input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input w-64"
+                  className="search-input w-full"
                 />
               </div>
-              <Button 
-                variant="outline" 
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="btn-outline"
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="btn-outline"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="btn-outline flex-1 md:flex-none"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span className="truncate">Refresh</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="btn-outline flex-1 md:flex-none"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span className="truncate">Logout</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Channels Section */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 md:py-8 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+          <div className="glass-card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
               <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
                 <Settings className="w-5 h-5 text-white glow-sm" />
                 Channels
@@ -336,7 +344,7 @@ function App() {
                     Add Channel
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-dialog">
+                <DialogContent className="glass-dialog max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle className="text-xl text-white">Add New Channel</DialogTitle>
                     <DialogDescription className="text-white high-contrast-text">
@@ -369,7 +377,7 @@ function App() {
                   <DialogFooter>
                     <Button 
                       onClick={handleAddChannel}
-                      className="btn-primary"
+                      className="btn-primary w-full md:w-auto"
                     >
                       Add Channel
                     </Button>
@@ -379,27 +387,27 @@ function App() {
             </div>
             <div className="space-y-4">
               {filteredChannels.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
+                <div className="text-center py-10 md:py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
                   <Info className="w-10 h-10 mx-auto text-white mb-2 glow-sm" />
-                  <p className="text-white high-contrast-text">No channels found. Add your first channel to get started.</p>
+                  <p className="text-white high-contrast-text px-2">No channels found. Add your first channel to get started.</p>
                 </div>
               ) : (
                 filteredChannels.map(channel => (
                   <div key={channel.id} className="border-2 border-white/20 rounded-lg p-4 hover:border-white/40 transition-colors bg-black/20 backdrop-blur-sm hover:bg-black/30">
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white flex items-center gap-2">
-                          {channel.name}
+                          <span className="truncate">{channel.name}</span>
                           {channel.allow_global_login ? (
-                            <ShieldCheck className="w-4 h-4 text-green-400 glow-sm" />
+                            <ShieldCheck className="w-4 h-4 text-green-400 glow-sm flex-shrink-0" />
                           ) : (
-                            <ShieldAlert className="w-4 h-4 text-orange-400 glow-sm" />
+                            <ShieldAlert className="w-4 h-4 text-orange-400 glow-sm flex-shrink-0" />
                           )}
                         </h3>
-                        <p className="text-xs text-white mt-1 font-mono">
+                        <p className="text-xs text-white mt-1 font-mono truncate">
                           ID: {channel.id}
                         </p>
-                        <div className="mt-2 flex items-center">
+                        <div className="mt-2 flex items-center flex-wrap">
                           <span className="text-xs text-white">Global Login:</span>
                           <span className={`ml-2 badge ${
                             channel.allow_global_login 
@@ -422,7 +430,7 @@ function App() {
                         variant="ghost"
                         size="sm"
                         onClick={() => initiateDelete('channel', channel.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20 flex-shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -433,9 +441,8 @@ function App() {
             </div>
           </div>
 
-          {/* Customers Section */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="glass-card p-4 md:p-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
               <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
                 <UserPlus className="w-5 h-5 text-white glow-sm" />
                 Customers
@@ -450,7 +457,7 @@ function App() {
                     Add Customer
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-dialog">
+                <DialogContent className="glass-dialog max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle className="text-xl text-white">Add New Customer</DialogTitle>
                     <DialogDescription className="text-white high-contrast-text">
@@ -534,7 +541,7 @@ function App() {
                   <DialogFooter>
                     <Button 
                       onClick={handleAddCustomer}
-                      className="btn-primary"
+                      className="btn-primary w-full md:w-auto"
                       disabled={channels.length === 0}
                     >
                       Add Customer
@@ -545,20 +552,20 @@ function App() {
             </div>
             <div className="space-y-4">
               {filteredCustomers.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
+                <div className="text-center py-10 md:py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
                   <Info className="w-10 h-10 mx-auto text-white mb-2 glow-sm" />
-                  <p className="text-white high-contrast-text">No customers found. Add your first customer to get started.</p>
+                  <p className="text-white high-contrast-text px-2">No customers found. Add your first customer to get started.</p>
                 </div>
               ) : (
                 filteredCustomers.map(customer => (
                   <div key={customer.id} className="border-2 border-white/20 rounded-lg p-4 hover:border-white/40 transition-colors bg-black/20 backdrop-blur-sm hover:bg-black/30">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium text-white">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-white truncate">
                           {customer.first_name} {customer.last_name}
                         </h3>
-                        <p className="text-xs text-white mt-1">{customer.email}</p>
-                        <p className="text-xs text-white mt-1 font-mono">ID: {customer.id}</p>
+                        <p className="text-xs text-white mt-1 truncate">{customer.email}</p>
+                        <p className="text-xs text-white mt-1 font-mono truncate">ID: {customer.id}</p>
                         <div className="mt-2">
                           <span className="text-xs text-white">Access Type:</span>
                           <span className="ml-2 badge badge-info">
@@ -593,7 +600,7 @@ function App() {
                         variant="ghost"
                         size="sm"
                         onClick={() => initiateDelete('customer', customer.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20 flex-shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -606,14 +613,12 @@ function App() {
         </div>
       </main>
       
-      {/* Fixed Sticky Footer */}
       <footer className="fixed bottom-0 left-0 right-0 glass-footer py-3 z-10">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-white text-sm high-contrast-text">Channel-Specific Customers Management · {new Date().getFullYear()}</p>
         </div>
       </footer>
       
-      {/* Loading Modal */}
       <LoadingModal visible={refreshing} />
     </div>
   );
