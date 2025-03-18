@@ -43,6 +43,22 @@ import {
   logout
 } from './lib/localStorage';
 
+// Loading Modal Component
+const LoadingModal = ({ visible }: { visible: boolean }) => {
+  if (!visible) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+      <div className="glass-card p-8 rounded-xl z-10 flex flex-col items-center">
+        <Loader2 className="w-12 h-12 animate-spin text-white mb-4 glow-sm" />
+        <h2 className="text-xl font-bold text-white">Loading Data...</h2>
+        <p className="text-white mt-2 high-contrast-text">Please wait while we fetch your information</p>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [customers, setCustomers] = useState<Array<Customer & { channel_ids?: string[] | null }>>([]);
@@ -61,13 +77,9 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Initialize localStorage with sample data if not already initialized
     initializeLocalStorage();
-    
-    // Check if user is authenticated
     setAuthenticated(isAuthenticated());
     
-    // Load data if authenticated
     if (isAuthenticated()) {
       fetchData();
     }
@@ -77,11 +89,9 @@ function App() {
     try {
       setLoading(true);
       
-      // Get channels from localStorage
       const channelsData = getChannels();
       setChannels(channelsData);
       
-      // Get customers with their channel associations
       const customersData = getCustomerWithChannels();
       setCustomers(customersData);
     } catch (error) {
@@ -127,7 +137,7 @@ function App() {
         last_name: newCustomer.last_name
       }, newCustomer.channel_ids);
       
-      fetchData(); // Refresh to get the updated list
+      fetchData();
       toast.success('Customer added successfully');
       setNewCustomer({
         email: '',
@@ -180,7 +190,10 @@ function App() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchData();
+    // Small delay to ensure loading modal appears
+    setTimeout(() => {
+      fetchData();
+    }, 2000);
   };
 
   const handleLogout = () => {
@@ -193,7 +206,6 @@ function App() {
     fetchData();
   };
 
-  // If not authenticated, show login screen
   if (!authenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
@@ -203,19 +215,19 @@ function App() {
   );
 
   const filteredCustomers = customers.filter(customer => 
-    customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.last_name.toLowerCase().includes(searchQuery.toLowerCase())
+    customer.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.last_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800">
-        <div className="bg-white/10 backdrop-blur-xl p-8 rounded-xl border border-white/20 shadow-2xl">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-900">
+        <div className="glass-card p-8 rounded-xl">
           <div className="flex flex-col items-center">
-            <Loader2 className="w-12 h-12 animate-spin text-indigo-300 mb-4" />
+            <Loader2 className="w-12 h-12 animate-spin text-white mb-4 glow-sm" />
             <h2 className="text-xl font-bold text-white">Loading Data...</h2>
-            <p className="text-indigo-200 mt-2">Please wait while we fetch your channels and customers</p>
+            <p className="text-white mt-2 high-contrast-text">Please wait while we fetch your channels and customers</p>
           </div>
         </div>
       </div>
@@ -223,32 +235,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-blue-900 text-white">
       <Toaster 
         position="top-right"
         toastOptions={{
           style: {
-            background: 'rgba(255, 255, 255, 0.8)',
+            background: 'rgba(0, 0, 0, 0.7)',
+            color: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
             backdropFilter: 'blur(10px)',
-            color: '#334155',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
           },
         }}
       />
       
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-slate-800/90 border-indigo-500/20 text-white backdrop-blur-xl">
+        <DialogContent className="glass-dialog">
           <DialogHeader>
             <DialogTitle className="text-xl text-white">Confirm Deletion</DialogTitle>
-            <DialogDescription className="text-indigo-200">
+            <DialogDescription className="text-white high-contrast-text">
               Are you sure you want to delete this {itemToDelete?.type}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end space-x-4 mt-6">
             <DialogClose asChild>
-              <Button variant="outline" className="border-indigo-400 text-indigo-200 hover:bg-indigo-800/50">
+              <Button variant="outline" className="btn-outline">
                 Cancel
               </Button>
             </DialogClose>
@@ -264,11 +277,11 @@ function App() {
       </Dialog>
 
       {/* Header */}
-      <header className="bg-black/30 backdrop-blur-lg border-b border-white/10 sticky top-0 z-10">
+      <header className="glass-header">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              <Users className="w-8 h-8 text-indigo-300" />
+              <Users className="w-8 h-8 text-white glow-sm" />
               Channel-Specific Customers
             </h1>
             <div className="flex items-center gap-4">
@@ -278,14 +291,14 @@ function App() {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-indigo-200 focus-visible:ring-indigo-400 w-64"
+                  className="search-input w-64"
                 />
               </div>
               <Button 
                 variant="outline" 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="border-indigo-400/50 text-indigo-200 hover:bg-indigo-500/20"
+                className="btn-outline"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 Refresh
@@ -293,7 +306,7 @@ function App() {
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
-                className="border-indigo-400/50 text-indigo-200 hover:bg-indigo-500/20"
+                className="btn-outline"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -304,40 +317,40 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8 pb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Channels Section */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 p-6 hover:shadow-indigo-500/10 transition-all duration-300">
+          <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
-                <Settings className="w-5 h-5 text-indigo-300" />
+                <Settings className="w-5 h-5 text-white glow-sm" />
                 Channels
-                <span className="text-xs bg-indigo-500/30 text-indigo-200 px-2 py-1 rounded-full">
+                <span className="badge badge-info">
                   {channels.length}
                 </span>
               </h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-indigo-400/50 text-indigo-200 hover:bg-indigo-500/20">
+                  <Button variant="outline" size="sm" className="btn-outline">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Channel
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-slate-800/90 border-indigo-500/20 text-white backdrop-blur-xl">
+                <DialogContent className="glass-dialog">
                   <DialogHeader>
                     <DialogTitle className="text-xl text-white">Add New Channel</DialogTitle>
-                    <DialogDescription className="text-indigo-200">
+                    <DialogDescription className="text-white high-contrast-text">
                       Create a new channel and set its global login access.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-indigo-100">Channel Name</label>
+                      <label className="text-sm font-medium text-white">Channel Name</label>
                       <Input
                         value={newChannel.name}
                         onChange={(e) => setNewChannel({ ...newChannel, name: e.target.value })}
                         placeholder="Enter channel name"
-                        className="bg-slate-700/50 border-indigo-500/30 text-white placeholder:text-slate-400"
+                        className="search-input"
                       />
                     </div>
                     <div className="flex items-center space-x-2">
@@ -346,9 +359,9 @@ function App() {
                         id="allow_global_login"
                         checked={newChannel.allow_global_login}
                         onChange={(e) => setNewChannel({ ...newChannel, allow_global_login: e.target.checked })}
-                        className="rounded border-indigo-500 bg-slate-700/50 text-indigo-500 focus:ring-indigo-500"
+                        className="rounded border-white bg-black/50 text-indigo-500"
                       />
-                      <label htmlFor="allow_global_login" className="text-sm font-medium text-indigo-100">
+                      <label htmlFor="allow_global_login" className="text-sm font-medium text-white">
                         Allow Global Login
                       </label>
                     </div>
@@ -356,7 +369,7 @@ function App() {
                   <DialogFooter>
                     <Button 
                       onClick={handleAddChannel}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      className="btn-primary"
                     >
                       Add Channel
                     </Button>
@@ -366,32 +379,32 @@ function App() {
             </div>
             <div className="space-y-4">
               {filteredChannels.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-indigo-500/20 rounded-lg bg-indigo-500/5">
-                  <Info className="w-10 h-10 mx-auto text-indigo-300 mb-2" />
-                  <p className="text-indigo-200">No channels found. Add your first channel to get started.</p>
+                <div className="text-center py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
+                  <Info className="w-10 h-10 mx-auto text-white mb-2 glow-sm" />
+                  <p className="text-white high-contrast-text">No channels found. Add your first channel to get started.</p>
                 </div>
               ) : (
                 filteredChannels.map(channel => (
-                  <div key={channel.id} className="border border-white/10 rounded-lg p-4 hover:border-indigo-400/30 transition-colors bg-white/5 backdrop-blur-sm hover:bg-indigo-600/10">
+                  <div key={channel.id} className="border-2 border-white/20 rounded-lg p-4 hover:border-white/40 transition-colors bg-black/20 backdrop-blur-sm hover:bg-black/30">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-medium text-white flex items-center gap-2">
                           {channel.name}
                           {channel.allow_global_login ? (
-                            <ShieldCheck className="w-4 h-4 text-green-400" />
+                            <ShieldCheck className="w-4 h-4 text-green-400 glow-sm" />
                           ) : (
-                            <ShieldAlert className="w-4 h-4 text-orange-400" />
+                            <ShieldAlert className="w-4 h-4 text-orange-400 glow-sm" />
                           )}
                         </h3>
-                        <p className="text-xs text-indigo-300 mt-1 font-mono">
+                        <p className="text-xs text-white mt-1 font-mono">
                           ID: {channel.id}
                         </p>
                         <div className="mt-2 flex items-center">
-                          <span className="text-xs text-indigo-200">Global Login:</span>
-                          <span className={`ml-2 px-2 py-1 text-xs rounded-full flex items-center gap-1 ${
+                          <span className="text-xs text-white">Global Login:</span>
+                          <span className={`ml-2 badge ${
                             channel.allow_global_login 
-                              ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                              : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                              ? 'badge-success' 
+                              : 'badge-warning'
                           }`}>
                             {channel.allow_global_login ? (
                               <>
@@ -421,66 +434,66 @@ function App() {
           </div>
 
           {/* Customers Section */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 p-6 hover:shadow-indigo-500/10 transition-all duration-300">
+          <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold flex items-center gap-2 text-white">
-                <UserPlus className="w-5 h-5 text-indigo-300" />
+                <UserPlus className="w-5 h-5 text-white glow-sm" />
                 Customers
-                <span className="text-xs bg-indigo-500/30 text-indigo-200 px-2 py-1 rounded-full">
+                <span className="badge badge-info">
                   {customers.length}
                 </span>
               </h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-indigo-400/50 text-indigo-200 hover:bg-indigo-500/20">
+                  <Button variant="outline" size="sm" className="btn-outline">
                     <Plus className="w-4 h-4 mr-2" />
                     Add Customer
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-slate-800/90 border-indigo-500/20 text-white backdrop-blur-xl">
+                <DialogContent className="glass-dialog">
                   <DialogHeader>
                     <DialogTitle className="text-xl text-white">Add New Customer</DialogTitle>
-                    <DialogDescription className="text-indigo-200">
+                    <DialogDescription className="text-white high-contrast-text">
                       Create a new customer and assign their channel access.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-indigo-100">Email</label>
+                      <label className="text-sm font-medium text-white">Email</label>
                       <Input
                         type="email"
                         value={newCustomer.email}
                         onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
                         placeholder="Enter email"
-                        className="bg-slate-700/50 border-indigo-500/30 text-white placeholder:text-slate-400"
+                        className="search-input"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-indigo-100">First Name</label>
+                      <label className="text-sm font-medium text-white">First Name</label>
                       <Input
                         value={newCustomer.first_name}
                         onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
                         placeholder="Enter first name"
-                        className="bg-slate-700/50 border-indigo-500/30 text-white placeholder:text-slate-400"
+                        className="search-input"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-indigo-100">Last Name</label>
+                      <label className="text-sm font-medium text-white">Last Name</label>
                       <Input
                         value={newCustomer.last_name}
                         onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
                         placeholder="Enter last name"
-                        className="bg-slate-700/50 border-indigo-500/30 text-white placeholder:text-slate-400"
+                        className="search-input"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-indigo-100">Channel Access</label>
+                      <label className="text-sm font-medium text-white">Channel Access</label>
                       <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                         {channels.length === 0 ? (
                           <p className="text-orange-300 text-xs">No channels available. Please create channels first.</p>
                         ) : (
                           channels.map(channel => (
-                            <div key={channel.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-indigo-600/20">
+                            <div key={channel.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-black/30">
                               <input
                                 type="checkbox"
                                 id={`channel_${channel.id}`}
@@ -498,9 +511,9 @@ function App() {
                                     });
                                   }
                                 }}
-                                className="rounded border-indigo-500 bg-slate-700/50 text-indigo-500 focus:ring-indigo-500"
+                                className="rounded border-white bg-black/50 text-indigo-500"
                               />
-                              <label htmlFor={`channel_${channel.id}`} className="text-sm text-indigo-100 flex items-center justify-between w-full">
+                              <label htmlFor={`channel_${channel.id}`} className="text-sm text-white flex items-center justify-between w-full">
                                 <span>{channel.name}</span>
                                 {channel.allow_global_login && (
                                   <span className="text-xs text-green-300 flex items-center">
@@ -512,7 +525,7 @@ function App() {
                           ))
                         )}
                       </div>
-                      <p className="text-xs text-indigo-300 mt-1">
+                      <p className="text-xs text-white mt-2 high-contrast-text">
                         <Info className="w-3 h-3 inline mr-1" />
                         Leave empty for global access (only to channels that allow global login).
                       </p>
@@ -521,7 +534,7 @@ function App() {
                   <DialogFooter>
                     <Button 
                       onClick={handleAddCustomer}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      className="btn-primary"
                       disabled={channels.length === 0}
                     >
                       Add Customer
@@ -532,23 +545,23 @@ function App() {
             </div>
             <div className="space-y-4">
               {filteredCustomers.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-indigo-500/20 rounded-lg bg-indigo-500/5">
-                  <Info className="w-10 h-10 mx-auto text-indigo-300 mb-2" />
-                  <p className="text-indigo-200">No customers found. Add your first customer to get started.</p>
+                <div className="text-center py-12 border-2 border-dashed border-white/20 rounded-lg bg-black/20">
+                  <Info className="w-10 h-10 mx-auto text-white mb-2 glow-sm" />
+                  <p className="text-white high-contrast-text">No customers found. Add your first customer to get started.</p>
                 </div>
               ) : (
                 filteredCustomers.map(customer => (
-                  <div key={customer.id} className="border border-white/10 rounded-lg p-4 hover:border-indigo-400/30 transition-colors bg-white/5 backdrop-blur-sm hover:bg-indigo-600/10">
+                  <div key={customer.id} className="border-2 border-white/20 rounded-lg p-4 hover:border-white/40 transition-colors bg-black/20 backdrop-blur-sm hover:bg-black/30">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-medium text-white">
                           {customer.first_name} {customer.last_name}
                         </h3>
-                        <p className="text-xs text-indigo-300 mt-1">{customer.email}</p>
-                        <p className="text-xs text-indigo-300 mt-1 font-mono">ID: {customer.id}</p>
+                        <p className="text-xs text-white mt-1">{customer.email}</p>
+                        <p className="text-xs text-white mt-1 font-mono">ID: {customer.id}</p>
                         <div className="mt-2">
-                          <span className="text-xs text-indigo-200">Access Type:</span>
-                          <span className="ml-2 px-2 py-1 text-xs rounded-full flex items-center gap-1 border border-indigo-500/30 bg-indigo-500/20 text-indigo-200">
+                          <span className="text-xs text-white">Access Type:</span>
+                          <span className="ml-2 badge badge-info">
                             {!customer.channel_ids?.length ? (
                               <>
                                 <Link className="w-3 h-3" /> Global Access
@@ -562,12 +575,12 @@ function App() {
                         </div>
                         {customer.channel_ids?.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-xs text-indigo-200">Channel Access:</span>
+                            <span className="text-xs text-white">Channel Access:</span>
                             <div className="flex flex-wrap gap-2 mt-1">
                               {customer.channel_ids.map(channelId => {
                                 const channel = channels.find(c => c.id === channelId);
                                 return (
-                                  <span key={channelId} className="px-2 py-1 text-xs rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30">
+                                  <span key={channelId} className="badge badge-purple">
                                     {channel?.name || `Channel ${channelId.slice(0, 8)}...`}
                                   </span>
                                 );
@@ -593,12 +606,15 @@ function App() {
         </div>
       </main>
       
-      {/* Footer */}
-      <footer className="bg-black/30 py-4 border-t border-white/10 mt-12">
+      {/* Fixed Sticky Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 glass-footer py-3 z-10">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-indigo-300 text-sm">Channel-Specific Customers Management · {new Date().getFullYear()}</p>
+          <p className="text-white text-sm high-contrast-text">Channel-Specific Customers Management · {new Date().getFullYear()}</p>
         </div>
       </footer>
+      
+      {/* Loading Modal */}
+      <LoadingModal visible={refreshing} />
     </div>
   );
 }
